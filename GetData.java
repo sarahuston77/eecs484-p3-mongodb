@@ -1,6 +1,7 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -45,8 +46,81 @@ public class GetData {
         JSONArray users_info = new JSONArray();
         
         try (Statement stmt = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
-            // Your implementation goes here....
+            ResultSet rs = stmt.executeQuery(
+                "SELECT user_id, first_name, last_name, gender, year_of_birth AS YOB, " +
+                "month_of_birth AS MOB, day_of_birth AS DOB FROM " + userTableName
+            );
             
+            while (rs.next()) {
+                JSONObject user = new JSONObject();
+
+                user.put("user_id", rs.getInt(1));
+                user.put("first_name", rs.getString(2));
+                user.put("last_name", rs.getString(3));
+                user.put("gender", rs.getString(4));
+                user.put("YOB", rs.getInt(5));
+                user.put("MOB", rs.getInt(6));
+                user.put("DOB", rs.getInt(7));
+                
+                PreparedStatement ps = oracleConnection.prepareStatement("SELECT user2_id AS friend FROM " + friendsTableName + 
+                    " WHERE user1_id = " + rs.getInt(1) + 
+                    " AND user2_id > user1_id" +
+                    " UNION SELECT user1_id AS friend FROM " + friendsTableName +
+                    " WHERE user2_id = " + rs.getInt(1) + 
+                    " AND user2_id < user1_id"
+                );
+
+                ResultSet rs2 = ps.executeQuery();
+
+                JSONArray friends = new JSONArray();
+
+                while (rs2.next()){
+                    friends.put(rs2.getInt(1));
+                }
+
+                rs2.close();
+
+                ps = oracleConnection.prepareStatement(
+                    "SELECT city_name, state_name, country_name " +
+                    "FROM " + cityTableName + " C, " + currentCityTableName + " N " +
+                    "WHERE C.city_id = N.current_city_id AND N.user_id = " + rs.getInt(1)
+                );
+
+                ResultSet rs3 = ps.executeQuery();
+
+                JSONObject current = new JSONObject();
+
+                while (rs3.next()){
+                    current.put("city", rs3.getString(1));
+                    current.put("state", rs3.getString(2));
+                    current.put("country", rs3.getString(3));
+                }
+
+                rs3.close();
+
+                ps = oracleConnection.prepareStatement(
+                    "SELECT city_name, state_name, country_name " +
+                    "FROM " + cityTableName + " C, " + hometownCityTableName + " N " +
+                    "WHERE C.city_id = N.hometown_city_id AND N.user_id = " + rs.getInt(1)
+                );
+
+                ResultSet rs4 = ps.executeQuery();
+
+                JSONObject hometown = new JSONObject();
+
+                while (rs4.next()){
+                    hometown.put("city", rs4.getString(1));
+                    hometown.put("state", rs4.getString(2));
+                    hometown.put("country", rs4.getString(3));
+                }
+
+                rs4.close();
+
+                user.put("friends", friends);
+                user.put("current", current);
+                user.put("hometown", hometown);
+                users_info.put(user);
+            }
             
             stmt.close();
         } catch (SQLException e) {
