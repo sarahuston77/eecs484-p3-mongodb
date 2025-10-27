@@ -117,8 +117,8 @@ public class GetData {
                 rs4.close();
 
                 user.put("friends", friends);
-                user.put("current", current);
                 user.put("hometown", hometown);
+                user.put("current", current);
                 users_info.put(user);
             }
             
