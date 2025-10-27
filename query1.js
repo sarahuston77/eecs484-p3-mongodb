@@ -7,7 +7,9 @@ function find_user(city, dbname) {
 
     let results = [];
     // TODO: find all users who live in city
-    // db.users.find(...);
+    results = db.users.find({"current.city" : city }, {user_id : 1}).map( 
+        (p) => { return p.user_id }).toArray();
+    
     // See test.js for a partial correctness check.
 	
     return results;
