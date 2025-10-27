@@ -79,6 +79,7 @@ public class GetData {
                 }
 
                 rs2.close();
+                ps.close();
 
                 ps = oracleConnection.prepareStatement(
                     "SELECT city_name, state_name, country_name " +
@@ -97,6 +98,7 @@ public class GetData {
                 }
 
                 rs3.close();
+                ps.close();
 
                 ps = oracleConnection.prepareStatement(
                     "SELECT city_name, state_name, country_name " +
@@ -115,6 +117,7 @@ public class GetData {
                 }
 
                 rs4.close();
+                ps.close();
 
                 user.put("friends", friends);
                 user.put("hometown", hometown);
