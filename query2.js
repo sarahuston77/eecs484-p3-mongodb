@@ -9,7 +9,20 @@
 function unwind_friends(dbname) {
     db = db.getSiblingDB(dbname);
 
-    // TODO: unwind friends
+    db.createCollection("flat_users")
+
+    db.users.find().forEach( (u) => {
+        let map = u.friends;
+        map.forEach( (f) => {
+            db.flat_users.insertOne({
+                user_id : u.user_id,
+                friends : f
+            })
+        }
+        )
+        return;  
+    });
+
 
     return;
 }
