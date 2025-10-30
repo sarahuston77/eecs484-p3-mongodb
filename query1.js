@@ -11,6 +11,5 @@ function find_user(city, dbname) {
         (p) => { return p.user_id }).toArray();
     
     // See test.js for a partial correctness check.
-	print(results);
     return results;
 }
